@@ -1,0 +1,19 @@
+[Unit]
+Description=PPTP
+After=docker.service
+Requires=docker.service
+[Service]
+TimeoutStartSec=0
+ExecStartPre=-/usr/bin/docker kill pptp
+ExecStartPre=-/usr/bin/docker rm pptp
+ExecStartPre=/usr/bin/docker pull olalond3/vpn-pptp
+ExecStart=/bin/bash -c "\
+  docker run \
+    --name pptp \
+    --privileged \
+    --env "PPTP_USERNAME=$(etcdctl get /pptp_username)" \
+    --env "PPTP_PASSWORD=$(etcdctl get /pptp_password)" \
+    -p 1723:1723 \
+    olalond3/vpn-pptp \
+"
+ExecStop=/usr/bin/docker stop pptp
